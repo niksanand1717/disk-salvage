@@ -108,6 +108,62 @@ def test_image_then_recover_from_drive(tmp_path):
     assert res["saved"] == 1 and res["bad_ranges"]
 
 
+def test_a_drive_failing_mid_scan_keeps_what_was_found(tmp_path):
+    from helpers import place
+    from salvage.errors import SourceUnavailable
+    from salvage.sources import MemorySource
+
+    data = place([(0x2000, PHOTO), (0x8000, NODATE), (0x40000, VIDEO)], 0x60000)
+
+    class Dying(MemorySource):
+        def __getitem__(self, k):            # every big read past 0x30000 fails: the drive is gone
+            if isinstance(k, slice) and (k.start or 0) >= 0x30000 and (k.stop - k.start) >= 4096:
+                raise SourceUnavailable("drive disappeared")
+            return super().__getitem__(k)
+
+    s = svc()
+    s._open = lambda source, raw=False: Dying(data, "dying.img")
+    out = tmp_path / "out"
+    with pytest.raises(SourceUnavailable):
+        s.recover("dying.img", str(out), scan_chunk=4096, post=[])
+    m = Manifest.load(str(out))
+    assert [r.offset for r in m.files] == [0x2000, 0x8000]
+    assert m.info["status"] == "interrupted" and "drive disappeared" in m.info["stopped"]
+    for r in m.files:
+        assert digest(m.abspath(r)) == r.sha256
+
+
+def test_stop_keeps_files_and_still_tidies_them(tmp_path):
+    from salvage.events import CancelToken
+
+    tok = CancelToken()
+
+    class StopAfterFirstFile(CollectingSink):
+        def emit(self, kind, **d):
+            super().emit(kind, **d)
+            if kind == "file":
+                tok.cancel()
+
+    s = SalvageService(platform=FakePlatform(), events=StopAfterFirstFile(), cancel=tok, read_timeout=None)
+    out = tmp_path / "out"
+    res = s.recover(fat_image(tmp_path), str(out), scan_chunk=4096)
+    assert res["stopped"] == "cancelled" and res["saved"] == 1
+    assert "names" not in res["post"] and res["post"]["dates"] == {"renamed": 1}
+    m = Manifest.load(str(out))
+    assert m.info["status"] == "stopped"
+    assert [r.path for r in m.files] == ["jpg/2020-01-02_03-04-05.jpg"]
+
+
+def test_recovering_from_a_drive_reads_it_about_once(tmp_path):
+    fb = Fat32Builder(16)
+    for i in range(5):
+        fb.add_file(f"IMG_{i:04d}.JPG", make_jpeg(400000 + i * 997, seed=100 + i))
+    drive = FakeDrive(bytes(mbr_disk(fb.build())))
+    res = svc(FakePlatform({"fake://0": drive})).recover("fake://0", str(tmp_path / "out"), post=["dates"])
+    assert res["saved"] == 5
+    assert drive.bytes_read <= 1.05 * len(drive.data), f"read {drive.bytes_read / len(drive.data):.2f}x the drive"
+
+
 def test_version_and_drives():
     plat = FakePlatform({"fake://0": FakeDrive(bytes(4096))})
     s = svc(plat)

@@ -88,6 +88,73 @@ def test_scanner_alignment_and_chunks():
     assert Scanner(MemorySource(data), 1).scan(sigs) == [(100, "jpeg")]
 
 
+def test_files_are_saved_while_the_scan_is_still_running(tmp_path):
+    class Tracked(MemorySource):
+        furthest = 0
+
+        def __getitem__(self, k):
+            if isinstance(k, slice):
+                self.furthest = max(self.furthest, k.stop or 0)
+            return super().__getitem__(k)
+
+    src = Tracked(place(FILES, 0x40000))
+    read_when_saved = []
+
+    class Sink(CollectingSink):
+        def emit(self, kind, **d):
+            super().emit(kind, **d)
+            if kind == "file":
+                read_when_saved.append(src.furthest)
+
+    sink = Sink()
+    Carver(src, REG, FolderWriter(str(tmp_path)), sink,
+           options=CarveOptions(scan_chunk=4096)).run(REG.resolve_types(None))
+    assert len(read_when_saved) == len(FILES)
+    assert read_when_saved[0] < 0x10000 < len(src), "the first file must be saved long before the scan ends"
+    assert read_when_saved == sorted(read_when_saved)
+    assert sink.of("phase") == [{"name": "recovering"}]
+
+
+def test_same_results_for_any_chunk_size():
+    def run(chunk, overlap=False):
+        rep = Carver(disk(), REG, DryRunWriter(), options=CarveOptions(scan_chunk=chunk, overlap=overlap)) \
+            .run(REG.resolve_types(None))
+        return [(r.offset, r.length, r.ext, r.status) for r in rep.files], rep.candidates
+    reference = run(1 << 30)                      # one chunk: everything scanned before carving
+    for chunk in (512, 4096, 65536):
+        assert run(chunk) == reference
+        assert run(chunk, overlap=True) == run(1 << 30, overlap=True)
+
+
+def test_checkpoints_report_the_files_saved_so_far(tmp_path):
+    snapshots, t = [], [0.0]
+
+    def clock():
+        t[0] += 1.0
+        return t[0]
+    Carver(disk(), REG, FolderWriter(str(tmp_path)), options=CarveOptions(scan_chunk=4096, checkpoint_every=1),
+           checkpoint=lambda files: snapshots.append(len(files)), clock=clock).run(REG.resolve_types(None))
+    assert snapshots == sorted(snapshots) and snapshots[-1] == len(FILES)
+    assert any(0 < s < len(FILES) for s in snapshots)
+
+
+def test_bad_sectors_found_while_copying_are_flagged(tmp_path):
+    jpeg_len = len(FILES[0][1])
+
+    class BadWhenCopied(MemorySource):
+        """The drive fails inside the first JPEG only when the whole file is read (the copy)."""
+        def __getitem__(self, k):
+            if isinstance(k, slice) and k.start == 0x2000 and k.stop - k.start == jpeg_len:
+                self._bad = [(0x2000 + 1024, 512)]
+            return super().__getitem__(k)
+
+    src = BadWhenCopied(place(FILES, 0x40000))
+    rep = Carver(src, REG, FolderWriter(str(tmp_path)), options=CarveOptions(scan_chunk=4096)).run({"jpg"})
+    first = rep.files[0]
+    assert first.status == "badsectors" and first.path.endswith("_badsectors.jpg")
+    assert (tmp_path / first.path).is_file()
+
+
 def test_overlapping_hits_skipped_unless_requested():
     inner = make_jpeg(3000, seed=4)
     outer = bytearray(make_mp4(20000))

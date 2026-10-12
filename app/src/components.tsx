@@ -88,8 +88,8 @@ export function StatsBar({ stats }: { stats: Record<string, number> }) {
 }
 
 /** Live telemetry for a running (or finished) job: readouts, sector map, counters and log. */
-export function JobPanel({ state, onCancel, showMap = true }:
-    { state: JobState; onCancel?: () => void; showMap?: boolean }) {
+export function JobPanel({ state, onCancel, showMap = true, stopLabel = "Stop" }:
+    { state: JobState; onCancel?: () => void; showMap?: boolean; stopLabel?: string }) {
   const p = state.progress;
   const active = state.running || p || state.feed.length > 1;
   return (
@@ -105,7 +105,7 @@ export function JobPanel({ state, onCancel, showMap = true }:
         <Panel label="Telemetry"
                right={state.running
                  ? <><span className="led amber blink" />{state.phase || "starting"}
-                     {onCancel && <button className="ghost small" onClick={onCancel}>Stop</button>}</>
+                     {onCancel && <button className="ghost small" onClick={onCancel}>{stopLabel}</button>}</>
                  : <><span className={`led ${state.error ? "red" : "green"}`} />{state.error ? "halted" : "complete"}</>}>
           <div className="readouts">
             <Readout label="Progress" value={`${percent(p).toFixed(1)}%`} tone="amber" />

@@ -50,9 +50,18 @@ export function RecoverStep({ code, from, label, onBack, onDone }:
         </div>
         <div className="row">
           <button onClick={start} disabled={!out || kinds.size === 0 || s.running}>Start recovery</button>
+          {!s.running && <span className="dim small">Files are saved the moment they are found.</span>}
         </div>
       </Panel>
-      <JobPanel state={s} onCancel={job.cancel} />
+      {s.running && out && (
+        <div className="alert ok">
+          <b>LIVE</b>
+          <span>Files are saved to {out} as soon as they are found: you can open the folder and look at them
+            now. If you stop, or the drive gives out, everything found so far is kept.</span>
+          <button className="ghost small" onClick={() => window.salvage.openPath(out)}>Open folder</button>
+        </div>
+      )}
+      <JobPanel state={s} onCancel={job.cancel} stopLabel="Stop (keep what's found)" />
       {s.fileCount > 0 && (
         <Panel label={`Latest recoveries · ${s.fileCount} total`} className="found">
           <ul>

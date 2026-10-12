@@ -30,13 +30,14 @@ function simulate(method, onEvent, id) {
     const emit = (event, data) => onEvent({ event, job: id, data });
     if (method === "list_drives") return setTimeout(() => resolve(drives), 50);
     if (method === "analyze") return setTimeout(() => resolve(analyze), 150);
-    emit("phase", { name: method === "image" ? "imaging" : "scanning" });
+    emit("phase", { name: method === "image" ? "imaging" : "recovering" });
     const target = finish ? 1 : 0.48;
     let k = 0, idx = 0;
     const t = setInterval(() => {
       k += 1;
       const done = Math.min(target, k / 30) * SIZE;
-      emit("progress", { phase: method === "image" ? "imaging" : "scanning", done, total: SIZE, unit: "bytes",
+      // like the real engine: files are saved while the scan is running, and only behind the scan position
+      emit("progress", { phase: method === "image" ? "imaging" : "recovering", done, total: SIZE, unit: "bytes",
                          rate: 41.7 * 1024 ** 2, eta: (SIZE - done) / (41.7 * 1024 ** 2), candidates: idx * 2,
                          bad: method === "image" && k > 8 ? 8192 : undefined });
       if (method === "recover") {

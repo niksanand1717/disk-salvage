@@ -23,6 +23,12 @@ Disk Salvage searches a drive sector by sector for photos and videos. It finds t
 partition table, the file system or the folders are gone. It only ever **reads** the drive it recovers
 from, and it is built for drives that are failing: unreadable sectors, USB disconnects, reads that hang.
 
+**Real-time recovery.** Every photo and video is saved **the moment it is found**, while the scan is still
+running. You can open the output folder and look at your files from the first minutes. If you stop early, or
+the drive dies halfway through, everything found up to that point is already saved, checksummed and listed
+in the report. Many carving tools only save files after a full first pass, so a drive that fails at 60%
+leaves you with nothing. On a drive, each area is also read only once; saving a file doesn't read it again.
+
 > [!WARNING]
 > **No warranty, no guarantee.** Disk Salvage is provided "as is", without warranty of any kind
 > (see [LICENSE](LICENSE)). It does not guarantee that any file can be recovered, that recovered files
@@ -54,6 +60,9 @@ from, and it is built for drives that are failing: unreadable sectors, USB disco
 
 ## What it can do
 
+- **Saves files in real time, as they are found.** Watch them arrive in the output folder during the scan.
+  Stopping, a crash, or a drive that gives out keeps everything found so far. `report.json` is updated
+  every few seconds, and the tidying steps still run when you stop early.
 - **Recovers ~50 photo and video formats** by their internal structure:
   - JPEG (including motion photos), HEIC, AVIF, PNG, GIF, WebP, TIFF, PSD
   - RAW files from Canon, Nikon, Sony, Fuji, Olympus, Panasonic, Pentax and more
@@ -129,7 +138,11 @@ If there's no release for your system yet, see [Building from source](#building-
 6. **Recover:**
    1. Choose an **output folder on a different drive**.
    2. Tick Photos and/or Videos.
-   3. Click **Start recovery** and watch files appear as they are found.
+   3. Click **Start recovery**. Files are saved as soon as they are found: use **Open folder** to look at them
+      while the scan continues. The sector map shows how much of the drive has been read (amber) and where
+      files were found (green).
+   4. Found what you needed? **Stop (keep what's found)** ends the scan early. The files found so far are
+      kept and tidied.
 7. **Finish:** see what was found, then **Open the folder**.
 
 How long it takes depends on the drive's size and speed, not on how many files it holds. A 64 GB card over
@@ -186,6 +199,8 @@ The output folder contains one sub-folder per file type (`jpg/`, `mp4/`, `heic/`
 - **If the drive disconnects during a copy or recovery,** unplug it, wait a few seconds and plug it back in.
   Disk Salvage waits and continues by itself.
 - **Keep the computer awake** for long runs (turn sleep off temporarily).
+- **Dying drive? Don't wait for the end.** Files arrive in real time, so copy the most important ones somewhere
+  safe while the scan is still running.
 - **Lots of files with no names?** That's normal when the file system was wiped. Date-based names and
   `report.csv` help you sort them.
 - **A video won't play?** Try VLC. Videos recorded in pieces (fragmented) can't always be rebuilt by carving.
@@ -262,7 +277,7 @@ app/      Electron + React + TypeScript desktop app
 
 ```
 → {"id": 7, "method": "recover", "params": {"source": "card.img", "out_dir": "E:/rescued"}}
-← {"event": "progress", "job": 7, "data": {"phase": "scanning", "done": 1048576, "total": 8589934592}}
+← {"event": "progress", "job": 7, "data": {"phase": "recovering", "done": 1048576, "total": 8589934592, "saved": 3}}
 ← {"event": "file", "job": 7, "data": {"ext": "jpg", "path": "jpg/IMG_0042.jpg", "status": "ok"}}
 ← {"id": 7, "result": {"saved": 812, "stats": {"jpg": 790, "mp4": 22}}}
 ```

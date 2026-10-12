@@ -21,8 +21,10 @@ export function FinishStep({ code, result, onRestart }:
           </>}>
       {result.stopped && (
         <div className="alert warn"><b>INCOMPLETE</b>
-          {result.stopped === "cancelled" ? "Stopped before the end: only part of the drive was searched."
-                                          : `Stopped early: ${result.stopped}`}
+          {result.stopped === "cancelled"
+            ? `Stopped before the end: only part of the drive was searched. The ${result.saved} file(s) found up to
+               that point are saved and tidied. Run the recovery again into a new folder to search the whole drive.`
+            : `Stopped early: ${result.stopped}. Everything found up to that point is saved.`}
         </div>
       )}
       <Panel label="Outcome" right={<><span className={`led ${result.saved ? "green" : "amber"}`} />

@@ -6,7 +6,7 @@ import platform as _pyplatform
 import sys
 
 import salvage
-from salvage.binutil import human
+from salvage.binutil import MB, human
 from salvage.carving import CarveOptions, Carver, DryRunWriter, FolderWriter
 from salvage.devices import Platform, get_platform
 from salvage.errors import SalvageError, SameDriveError
@@ -16,7 +16,9 @@ from salvage.fs import BOOT_SIGNATURES, analyze_disk, find_lost_volumes, probe_f
 from salvage.imaging import Imager
 from salvage.manifest import Manifest
 from salvage.post import DEFAULT_STEPS, PostContext, run_steps
-from salvage.sources import open_source
+from salvage.sources import DeviceSource, open_source
+
+DEVICE_SCAN_CHUNK = 64 * MB      # well under DeviceSource's 256 MB block cache
 
 
 class SalvageService:
@@ -91,9 +93,26 @@ class SalvageService:
             opt = CarveOptions(align=align, min_size=min_size)
             if scan_chunk:
                 opt.scan_chunk = scan_chunk
+            elif isinstance(src, DeviceSource):
+                opt.scan_chunk = DEVICE_SCAN_CHUNK      # fits the block cache: each area is read once
             writer = DryRunWriter() if dry_run else FolderWriter(out_dir)
             markers = BOOT_SIGNATURES if align >= 16 else []
-            rep = Carver(src, self.registry, writer, self.events, self.cancel, opt, markers).run(wanted)
+            man = None if dry_run else Manifest(out_dir, source, info={"status": "in progress"})
+
+            def checkpoint(files):                      # report.json always lists what is on disk
+                man.files = list(files)
+                man.save()
+
+            carver = Carver(src, self.registry, writer, self.events, self.cancel, opt, markers,
+                            checkpoint=None if dry_run else checkpoint)
+            try:
+                rep = carver.run(wanted)
+            except BaseException as ex:
+                if man is not None:                     # the drive or the app failed: keep what we have
+                    man.files = list(carver.report.files)
+                    man.info.update(status="interrupted", stopped=f"{type(ex).__name__}: {ex}")
+                    man.save()
+                raise
             lost = find_lost_volumes(src, rep.boot_offsets, disk.known_boot_offsets)
             fat = [{"data_start": fs.data_start, "cluster": fs.cluster, "size": fs.size}
                    for fs in disk.fat_volumes()]
@@ -109,11 +128,17 @@ class SalvageService:
             if dry_run:
                 summary["files"] = [r.to_dict() for r in rep.files]
                 return summary
-            man = Manifest(out_dir, source, rep.files, {k: v for k, v in summary.items() if k != "out_dir"})
-            man.info["fat_volumes"] = fat
+            man.files = rep.files
+            man.info = {k: v for k, v in summary.items() if k != "out_dir"}
+            man.info.update(fat_volumes=fat, status="stopped" if rep.stopped else "complete")
             man.save()
-            if rep.stopped != "cancelled" and post != []:
-                summary["post"] = run_steps(PostContext(man, src, self.events, self.cancel), post)
+            steps = list(DEFAULT_STEPS if post is None else post)
+            cancel = self.cancel
+            if rep.stopped == "cancelled":
+                # stopped early: still tidy what was found, but skip "names" (it reads the drive again)
+                steps, cancel = [s for s in steps if s != "names"], CancelToken()
+            if steps:
+                summary["post"] = run_steps(PostContext(man, src, self.events, cancel), steps)
             return summary
         finally:
             src.close()

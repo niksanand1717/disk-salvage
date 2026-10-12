@@ -1,5 +1,7 @@
-"""One sequential pass over the source, collecting sector-aligned signature hits."""
+"""One sequential pass over the source, collecting sector-aligned signature hits chunk by chunk."""
 from __future__ import annotations
+
+from typing import Iterator
 
 from salvage.binutil import MB
 from salvage.events import CancelToken, EventSink, NullSink, Progress
@@ -17,29 +19,40 @@ class Scanner:
         self.chunk = max(align, (chunk_bytes // align) * align)
         self.events, self.cancel = events or NullSink(), cancel or CancelToken()
 
-    def scan(self, signatures: list[tuple[Signature, str]]) -> list[tuple[int, str]]:
-        """Sorted (offset, kind) candidates."""
+    def chunks(self, signatures: list[tuple[Signature, str]]) -> Iterator[tuple[int, list[tuple[int, str]]]]:
+        """Yield (bytes scanned so far, sorted (offset, kind) hits in that chunk), one chunk at a time.
+
+        Hits are in increasing offset order across chunks, so a consumer can act on them
+        while the scan continues.
+        """
         src, n, align = self.src, len(self.src), self.align
         multi = [x for x in signatures if len(x[0].pattern) > 1]
         single = [x for x in signatures if len(x[0].pattern) == 1]
         if align < HEAD and single:
             self.events.emit("warning", message="single-byte signatures (TS video, FAT boot sectors) "
                                                 "need --align >= 16; skipping them")
-        cands: set[tuple[int, str]] = set()
-        prog = Progress(self.events, "scanning", n)
         cs = 0
         while cs < n:
             self.cancel.check()
             ce = min(n, cs + self.chunk)
             data = src[cs:ce]
+            hits: set[tuple[int, str]] = set()
             if align >= HEAD:
-                self._scan_heads(data, cs, multi, single, cands)
+                self._scan_heads(data, cs, multi, single, hits)
             else:
-                self._scan_linear(data, cs, ce, multi, cands)
+                self._scan_linear(data, cs, ce, multi, hits)
             cs = ce
-            prog.update(cs, candidates=len(cands))
-        prog.update(n, force=True, candidates=len(cands))
-        return sorted(cands)
+            yield cs, sorted(hits)
+
+    def scan(self, signatures: list[tuple[Signature, str]]) -> list[tuple[int, str]]:
+        """All hits at once, sorted (offset, kind)."""
+        prog = Progress(self.events, "scanning", len(self.src))
+        out: list[tuple[int, str]] = []
+        for done, hits in self.chunks(signatures):
+            out += hits
+            prog.update(done, candidates=len(out))
+        prog.update(len(self.src), force=True, candidates=len(out))
+        return out
 
     def _ok(self, sig, st):
         return sig.check is None or sig.check(self.src, st, len(self.src))

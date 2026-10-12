@@ -186,6 +186,7 @@ class FakeDrive:
         self.hang_at: dict[int, int] = {}  # sector -> how many reads hang
         self.hang_seconds = 5.0
         self.reads = 0
+        self.bytes_read = 0
         self.lock = threading.Lock()
 
 
@@ -224,6 +225,7 @@ class FakeHandle:
             raise OSError(5, "I/O error (bad sector)")
         out = d.data[self.pos:self.pos + n]
         self.pos += len(out)
+        d.bytes_read += len(out)
         return out
 
     def close(self):

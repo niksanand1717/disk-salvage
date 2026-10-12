@@ -315,7 +315,9 @@ class DeviceSource:
                 return self._block(ba)[a - o:b - o]
             parts = []
             for bi in range(ba, bb + 1):
-                blk = self._block(bi) if bb - ba < 4 else self.load_block(bi)   # big reads skip cache
+                # cached even for big reads: real-time carving saves files from the area just
+                # scanned, so it is served from memory instead of being read from the drive again
+                blk = self._block(bi)
                 o = bi * self.BLOCK
                 parts.append(blk[max(a, o) - o:min(b, o + len(blk)) - o])
             return b"".join(parts)

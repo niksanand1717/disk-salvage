@@ -48,15 +48,24 @@ class FolderWriter:
     def free_bytes(self) -> int:
         return self._disk_usage(self.out_dir).free
 
+    @staticmethod
+    def _name(start, ext, status, idx) -> str:
+        tag = "" if status == "ok" else f"_{status}"
+        return f"{ext}/{idx:06d}_0x{start:x}{tag}.{ext}"
+
+    def retag(self, rel, start, ext, status, idx) -> str:
+        """Rename an already saved file to carry a new status (e.g. _badsectors)."""
+        new = self._name(start, ext, status, idx)
+        os.replace(os.path.join(self.out_dir, *rel.split("/")), os.path.join(self.out_dir, *new.split("/")))
+        return new
+
     def save(self, src, start, end, ext, status, idx):
         need = end - start
         free = self.free_bytes()
         if free - need < self.reserve:
             raise OutOfSpace(f"only {human(free)} free in {self.out_dir}; the next file needs "
                              f"{human(need)} (keeping {human(self.reserve)} spare)")
-        folder = os.path.join(self.out_dir, ext)
-        os.makedirs(folder, exist_ok=True)
-        tag = "" if status == "ok" else f"_{status}"
-        rel = os.path.join(ext, f"{idx:06d}_0x{start:x}{tag}.{ext}")
-        digest = copy_range(src, start, end, os.path.join(self.out_dir, rel))
-        return rel.replace(os.sep, "/"), digest
+        os.makedirs(os.path.join(self.out_dir, ext), exist_ok=True)
+        rel = self._name(start, ext, status, idx)
+        digest = copy_range(src, start, end, os.path.join(self.out_dir, *rel.split("/")))
+        return rel, digest
