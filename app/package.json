@@ -50,6 +50,15 @@
     },
     "portable": { "artifactName": "${productName}-${version}-portable.${ext}", "requestExecutionLevel": "admin" },
     "mac": { "target": "dmg", "category": "public.app-category.utilities" },
-    "linux": { "target": "AppImage", "category": "Utility" }
+    "linux": {
+      "target": ["AppImage", "deb", "rpm"],
+      "category": "Utility",
+      "executableName": "disk-salvage",
+      "maintainer": "Nikhil Anand <niksanand1717@users.noreply.github.com>",
+      "synopsis": "Recover photos and videos from damaged drives and disk images",
+      "description": "Free, open-source photo and video recovery for damaged drives, memory cards and disk images. Read-only, built for failing drives. Provided as is, without warranty."
+    },
+    "deb": { "artifactName": "disk-salvage_${version}_${arch}.${ext}" },
+    "rpm": { "artifactName": "disk-salvage-${version}.${arch}.${ext}" }
   }
 }

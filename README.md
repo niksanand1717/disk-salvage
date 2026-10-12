@@ -84,7 +84,9 @@ Download the latest version from the [**Releases**](../../releases) page:
 |---|---|---|
 | Windows 10/11 | `Disk Salvage-Setup-<version>.exe` (installer) or `Disk Salvage-<version>-portable.exe` (no install) | Asks for Administrator rights each time it opens. That is needed to read drives directly. |
 | macOS | `Disk Salvage-<version>.dmg` | Asks for your administrator password inside the app. First launch: right-click → **Open** (the app is not code-signed). |
-| Linux | `Disk Salvage-<version>.AppImage` | `chmod +x` it, then run it. Asks for your sudo password inside the app. |
+| Linux (Debian, Ubuntu, Mint…) | `disk-salvage_<version>_amd64.deb` | `sudo apt install ./disk-salvage_<version>_amd64.deb`, then start **Disk Salvage** from the app menu. Asks for your sudo password inside the app. |
+| Linux (Fedora, RHEL, openSUSE…) | `disk-salvage-<version>.x86_64.rpm` | `sudo dnf install ./disk-salvage-<version>.x86_64.rpm` (openSUSE: `sudo zypper install …`). |
+| Linux (any) | `Disk Salvage-<version>.AppImage` | No install: `chmod +x` it, then run it. |
 
 The app includes everything it needs; you don't have to install Python or anything else.
 
