@@ -57,7 +57,9 @@ export function App() {
   return (
     <div className="app">
       <nav className="steps" aria-label="progress through the steps">
-        <button className="brand" onClick={restart} disabled={step === "mode"}>Disk Salvage</button>
+        <button className="brand" onClick={restart} disabled={step === "mode"}>
+          <img src="logo.svg" alt="" width={28} height={28} />Disk Salvage
+        </button>
         {mode && (
           <ol>
             {steps.map((s) => <li key={s.id} className={s.id === step ? "current" : ""}>{s.label}</li>)}

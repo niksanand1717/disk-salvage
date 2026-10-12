@@ -84,6 +84,8 @@ function createWindow(): void {
     minWidth: 760,
     minHeight: 560,
     title: "Disk Salvage",
+    icon: app.isPackaged ? path.join(process.resourcesPath, "icon.png")
+                         : path.join(APP_ROOT, "build-resources", "icons", "512x512.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

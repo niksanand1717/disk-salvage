@@ -46,7 +46,7 @@ body {
 .app { display: grid; grid-template-columns: 200px 1fr; height: 100%; }
 .steps { background: var(--panel); border-right: 1px solid var(--line); padding: 20px 16px; }
 .brand {
-  display: block; font-weight: 700; font-size: 16px; margin-bottom: 24px; padding: 0;
+  display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; margin-bottom: 24px; padding: 0;
   background: none; border: none; color: var(--text);
 }
 .brand:disabled { opacity: 1; }

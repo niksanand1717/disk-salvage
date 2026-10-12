@@ -12,6 +12,7 @@
     "build:renderer": "vite build",
     "build": "npm run build:main && npm run build:renderer",
     "build:engine": "node scripts/build-engine.mjs",
+    "icons": "electron scripts/render-assets.cjs && python scripts/make-icons.py",
     "start": "npm run build && electron .",
     "dist": "npm run build && npm run build:engine && electron-builder --publish never",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.main.json --noEmit",
@@ -35,10 +36,14 @@
   "build": {
     "appId": "app.disksalvage.desktop",
     "productName": "Disk Salvage",
-    "directories": { "output": "release" },
+    "directories": { "output": "release", "buildResources": "build-resources" },
     "files": ["dist/**", "dist-electron/electron/**", "package.json"],
-    "extraResources": [{ "from": "build/engine/salvage-engine", "to": "engine" }],
+    "extraResources": [
+      { "from": "build/engine/salvage-engine", "to": "engine" },
+      { "from": "build-resources/icons/512x512.png", "to": "icon.png" }
+    ],
     "win": {
+      "icon": "build-resources/icon.ico",
       "target": ["nsis", "portable"],
       "requestedExecutionLevel": "requireAdministrator"
     },
@@ -49,8 +54,9 @@
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "portable": { "artifactName": "${productName}-${version}-portable.${ext}", "requestExecutionLevel": "admin" },
-    "mac": { "target": "dmg", "category": "public.app-category.utilities" },
+    "mac": { "icon": "build-resources/icon.icns", "target": "dmg", "category": "public.app-category.utilities" },
     "linux": {
+      "icon": "build-resources/icons",
       "target": ["AppImage", "deb", "rpm"],
       "category": "Utility",
       "executableName": "disk-salvage",

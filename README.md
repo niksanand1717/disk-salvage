@@ -1,7 +1,19 @@
-# Disk Salvage
+<p align="center">
+  <img src="assets/logo-256.png" alt="Disk Salvage logo" width="128" height="128">
+</p>
 
-**Free, open-source photo and video recovery for damaged drives, memory cards and disk images.**
-Windows · macOS · Linux · MIT licensed
+<h1 align="center">Disk Salvage</h1>
+
+<p align="center">
+  <b>Free, open-source photo and video recovery for damaged drives, memory cards and disk images.</b><br>
+  Windows · macOS · Linux · MIT licensed
+</p>
+
+<p align="center">
+  <a href="../../releases/latest">Download</a> ·
+  <a href="#step-by-step-recover-photos-and-videos">How to use</a> ·
+  <a href="CONTRIBUTING.md">Contribute</a>
+</p>
 
 Disk Salvage searches a drive sector by sector for photos and videos. It finds them even when the
 partition table, the file system or the folders are gone. It only ever **reads** the drive it recovers

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Disk Salvage (small sizes)</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1E3A8A"/>
+      <stop offset="1" stop-color="#0284C7"/>
+    </linearGradient>
+    <clipPath id="photo"><rect x="300" y="330" width="424" height="400" rx="40"/></clipPath>
+  </defs>
+  <!-- simplified for 16-48 px: bigger shapes, no contacts, no badge -->
+  <rect x="16" y="16" width="992" height="992" rx="200" fill="url(#bg)"/>
+  <path fill="#FFFFFF" d="M290 140 H650 L790 280 V840 Q790 884 746 884 H290 Q234 884 234 828 V196 Q234 140 290 140 Z"/>
+  <rect x="300" y="330" width="424" height="400" rx="40" fill="#DBEAFE"/>
+  <g clip-path="url(#photo)">
+    <circle cx="620" cy="440" r="62" fill="#F59E0B"/>
+    <polygon points="290,730 470,480 650,730" fill="#1D4ED8"/>
+    <polygon points="430,730 600,560 740,700 740,730" fill="#1D4ED8"/>
+  </g>
+</svg>

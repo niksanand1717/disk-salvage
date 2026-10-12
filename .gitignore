@@ -7,5 +7,6 @@ app/dist/
 app/dist-electron/
 app/release/
 .venv/
+assets/rendered/
 *.img
 *.img.map
