@@ -1,0 +1,44 @@
+name: Build installers
+
+# Builds the Windows .exe files, the macOS .dmg and the Linux .AppImage.
+# Run it from the Actions tab, or push a tag such as v0.1.0.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  package:
+    name: package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: python -m pip install pyinstaller
+      - run: npm ci
+      - run: npm run dist
+        env:
+          SALVAGE_PYTHON: python
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"     # unsigned builds
+      - uses: actions/upload-artifact@v4
+        with:
+          name: disk-salvage-${{ runner.os }}
+          path: |
+            app/release/*.exe
+            app/release/*.dmg
+            app/release/*.AppImage
+          if-no-files-found: error

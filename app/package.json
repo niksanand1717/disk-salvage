@@ -1,0 +1,55 @@
+{
+  "name": "disk-salvage-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop app for Disk Salvage: recover photos and videos from damaged drives",
+  "author": "Nikhil Anand",
+  "license": "MIT",
+  "homepage": "https://github.com/niksanand1717/disk-salvage",
+  "main": "dist-electron/electron/main.js",
+  "scripts": {
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "vite build",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:engine": "node scripts/build-engine.mjs",
+    "start": "npm run build && electron .",
+    "dist": "npm run build && npm run build:engine && electron-builder --publish never",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.3.4",
+    "electron": "33.3.1",
+    "electron-builder": "25.1.8",
+    "typescript": "5.7.2",
+    "vite": "6.0.7",
+    "vitest": "2.1.8"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "build": {
+    "appId": "app.disksalvage.desktop",
+    "productName": "Disk Salvage",
+    "directories": { "output": "release" },
+    "files": ["dist/**", "dist-electron/electron/**", "package.json"],
+    "extraResources": [{ "from": "build/engine/salvage-engine", "to": "engine" }],
+    "win": {
+      "target": ["nsis", "portable"],
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": { "artifactName": "${productName}-${version}-portable.${ext}", "requestExecutionLevel": "admin" },
+    "mac": { "target": "dmg", "category": "public.app-category.utilities" },
+    "linux": { "target": "AppImage", "category": "Utility" }
+  }
+}

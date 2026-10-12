@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "disk-salvage"
+version = "0.1.0"
+description = "Recover photos and videos from damaged or failing drives and disk images"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+salvage = "salvage.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["salvage*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
