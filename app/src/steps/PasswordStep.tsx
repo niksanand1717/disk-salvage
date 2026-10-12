@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 
-import { Step } from "../components";
+import { Panel, Step } from "../components";
 
 /** macOS / Linux: reading drives needs root, so the engine is restarted through sudo with this password. */
 export function PasswordStep({ onDone }: { onDone: (elevated: boolean) => void }) {
@@ -20,20 +20,23 @@ export function PasswordStep({ onDone }: { onDone: (elevated: boolean) => void }
   }
 
   return (
-    <Step title="Administrator password"
+    <Step title="Authorization required"
           intro={<>Reading drives directly needs administrator rights. Enter the password of an administrator
-            account on this {window.salvage.platform === "darwin" ? "Mac" : "computer"}. It is passed to the
-            system (sudo) once and not stored.</>}>
-      <form className="password" onSubmit={submit}>
-        <input type="password" autoFocus value={password} placeholder="Password" aria-label="Administrator password"
-               onChange={(e) => setPassword(e.target.value)} disabled={busy} />
-        <div className="row">
-          <button type="submit" disabled={!password || busy}>{busy ? "Checking…" : "Continue"}</button>
-          <button type="button" className="ghost" onClick={() => onDone(false)} disabled={busy}>
-            Continue without (disk image files only)</button>
-        </div>
-        {error && <div className="box error" role="alert">{error}</div>}
-      </form>
+            account on this {window.salvage.platform === "darwin" ? "Mac" : "computer"}. It is handed to the
+            system (sudo) once and never stored.</>}>
+      <Panel label="Access control" right={<><span className={`led ${busy ? "amber blink" : "amber"}`} />
+        {busy ? "verifying" : "awaiting credentials"}</>}>
+        <form className="password" onSubmit={submit}>
+          <input type="password" autoFocus value={password} placeholder="Administrator password"
+                 aria-label="Administrator password" onChange={(e) => setPassword(e.target.value)} disabled={busy} />
+          <div className="row">
+            <button type="submit" disabled={!password || busy}>{busy ? "Verifying…" : "Authorize"}</button>
+            <button type="button" className="ghost" onClick={() => onDone(false)} disabled={busy}>
+              Continue without (image files only)</button>
+          </div>
+          {error && <div className="alert err" role="alert"><b>DENIED</b>{error}</div>}
+        </form>
+      </Panel>
     </Step>
   );
 }

@@ -48,6 +48,15 @@ Implement `PostStep` (`name`, `title`, `run(ctx) -> dict`) in `engine/salvage/po
 in `post/__init__.py`. Change files only through the `Manifest` (`move`, add records), so `report.json`
 always matches what is on disk.
 
+## Logo, icons and screenshots
+
+- `assets/logo.svg` (and `logo-small.svg` for 16–48 px) are the sources of every icon. After editing them, run
+  `npm run icons` in `app/`; it re-renders the PNGs, `.ico`, `.icns`, Linux icons and the social preview.
+- `npm run build:renderer && electron scripts/preview-ui.cjs` re-takes the screenshots in `docs/screenshots/`
+  with simulated data (no drives needed).
+- Run both from a normal terminal: VS Code's terminal sets `ELECTRON_RUN_AS_NODE`, which stops Electron from
+  opening windows (`set ELECTRON_RUN_AS_NODE=` / `unset ELECTRON_RUN_AS_NODE` first).
+
 ## Reporting bugs
 
 Please include:

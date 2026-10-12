@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Disk Salvage (small sizes)</title>
+  <!-- simplified for 16-48 px: no rings, sweep or brackets; heavier card -->
+  <rect x="16" y="16" width="992" height="992" rx="190" fill="#0A1219"/>
+  <rect x="16" y="16" width="992" height="992" rx="190" fill="none" stroke="#2A3F54" stroke-width="24"/>
+  <path d="M300 180 H640 L780 320 V820 Q780 860 740 860 H300 Q244 860 244 804 V236 Q244 180 300 180 Z"
+        fill="#0C151E" stroke="#FFB020" stroke-width="64" stroke-linejoin="round"/>
+  <polygon points="300,800 450,560 540,680 600,620 724,800" fill="#FFB020"/>
+  <circle cx="610" cy="430" r="78" fill="#3BE08A"/>
+</svg>

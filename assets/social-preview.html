@@ -5,43 +5,59 @@
 <meta charset="utf-8">
 <style>
   html, body { margin: 0; width: 1280px; height: 640px; overflow: hidden; }
-  html { background: #0B1530; }           /* keeps body's background on the body box, not the window */
+  html { background: #05080c; }           /* keeps body's background on the body box, not the window */
   body {
-    font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    color: #F8FAFC;
+    position: relative; box-sizing: border-box; padding: 0 92px;
+    display: flex; align-items: center; gap: 60px;
+    font-family: "Segoe UI", "Inter", Arial, sans-serif; color: #d6e1ea;
     background:
-      radial-gradient(900px 500px at 85% 110%, rgba(16, 185, 129, .22), transparent 60%),
-      radial-gradient(800px 600px at 0% 0%, rgba(2, 132, 199, .35), transparent 60%),
-      linear-gradient(135deg, #0B1530 0%, #12224A 100%);
-    display: flex; align-items: center; gap: 56px; padding: 0 88px; box-sizing: border-box;
-    position: relative;
+      radial-gradient(700px 500px at 22% 50%, rgba(59, 224, 138, 0.10), transparent 65%),
+      radial-gradient(900px 500px at 100% 0%, rgba(76, 201, 240, 0.08), transparent 60%),
+      linear-gradient(rgba(130, 160, 190, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130, 160, 190, 0.06) 1px, transparent 1px),
+      #05080c;
+    background-size: auto, auto, 32px 32px, 32px 32px, auto;
   }
-  /* faint "sectors" grid: a nod to scanning a disk */
-  body::before {
-    content: ""; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(148,163,184,.07) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(148,163,184,.07) 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
-  img { width: 280px; height: 280px; flex: none; position: relative; filter: drop-shadow(0 24px 40px rgba(0,0,0,.45)); }
+  .frame { position: absolute; inset: 26px; pointer-events: none; }
+  .frame i { position: absolute; width: 34px; height: 34px; border: 3px solid #ffb020; }
+  .frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+  .frame i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+  .frame i:nth-child(3) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+  .frame i:nth-child(4) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+  .hud { position: absolute; font: 15px "Cascadia Mono", Consolas, monospace; letter-spacing: 0.22em; color: #5d7184; }
+  .hud.tl { top: 46px; left: 82px; }
+  .hud.tr { top: 46px; right: 82px; color: #ffb020; }
+  .hud.bl { bottom: 44px; left: 82px; }
+  .hud.br { bottom: 44px; right: 82px; }
+  .hud b { color: #3be08a; }
+  img { width: 290px; height: 290px; flex: none; position: relative; filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
   .text { position: relative; }
-  h1 { font-size: 88px; line-height: 1; margin: 0 0 22px; font-weight: 700; letter-spacing: -1.5px; }
-  p { margin: 0; font-size: 32px; line-height: 1.35; color: #CBD5E1; max-width: 720px; }
-  .chips { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
-  .chip { font-size: 21px; padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.08);
-          border: 1px solid rgba(255,255,255,.16); color: #E2E8F0; }
-  .chip.green { background: rgba(16,185,129,.18); border-color: rgba(16,185,129,.5); color: #A7F3D0; }
+  .kicker { font: 16px "Cascadia Mono", Consolas, monospace; letter-spacing: 0.3em; color: #ffb020; margin-bottom: 14px; }
+  h1 { font: 700 84px/1 "Cascadia Mono", Consolas, monospace; letter-spacing: 0.04em; margin: 0 0 22px; color: #f1f6fa; }
+  p { margin: 0; font-size: 29px; line-height: 1.4; color: #a9b8c6; max-width: 740px; }
+  .tags { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+  .tag { display: flex; align-items: center; gap: 10px; font: 17px "Cascadia Mono", Consolas, monospace;
+         letter-spacing: 0.08em; padding: 8px 14px; border: 1px solid #2a3d50;
+         background: rgba(12, 19, 27, 0.9); color: #d6e1ea; }
+  .tag i { width: 9px; height: 9px; border-radius: 50%; background: #3be08a; box-shadow: 0 0 8px #3be08a; }
+  .tag.amber { border-color: #ffb020; color: #ffb020; }
+  .tag.amber i { background: #ffb020; box-shadow: 0 0 8px #ffb020; }
 </style>
 </head>
 <body>
+  <div class="frame"><i></i><i></i><i></i><i></i></div>
+  <div class="hud tl">// OPS CONSOLE</div>
+  <div class="hud tr">● REC</div>
+  <div class="hud bl">STATUS <b>OPERATIONAL</b></div>
+  <div class="hud br">MIT · FREE · OPEN SOURCE</div>
   <img src="logo.svg" alt="">
   <div class="text">
-    <h1>Disk Salvage</h1>
+    <div class="kicker">PHOTO &amp; VIDEO RECOVERY</div>
+    <h1>DISK SALVAGE</h1>
     <p>Recover photos and videos from damaged drives, memory cards and disk images.</p>
-    <div class="chips">
-      <span class="chip green">Free &amp; open source</span>
-      <span class="chip">Windows</span><span class="chip">macOS</span><span class="chip">Linux</span>
-      <span class="chip">Read-only</span>
+    <div class="tags">
+      <span class="tag amber"><i></i>READ-ONLY</span>
+      <span class="tag"><i></i>Windows</span><span class="tag"><i></i>macOS</span><span class="tag"><i></i>Linux</span>
     </div>
   </div>
 </body>

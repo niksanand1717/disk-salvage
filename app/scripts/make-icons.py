@@ -9,7 +9,7 @@ Outputs
   app/build-resources/icon.ico          Windows (16-256, small sizes use the simplified logo)
   app/build-resources/icon.icns         macOS
   app/build-resources/icons/NxN.png     Linux (16-512)
-  app/public/logo.svg                   favicon / in-app logo
+  app/public/logo.svg, logo-small.svg   favicon / in-app logo
 """
 import json
 import shutil
@@ -62,6 +62,7 @@ def main() -> None:
     public = ROOT / "app" / "public"
     public.mkdir(exist_ok=True)
     shutil.copy(ASSETS / "logo.svg", public / "logo.svg")
+    shutil.copy(ASSETS / "logo-small.svg", public / "logo-small.svg")      # in-app sizes (34 px)
     shutil.rmtree(RENDERED)
     print("icons written:", ", ".join(sorted(p.name for p in BUILD.rglob("*") if p.is_file())))
 

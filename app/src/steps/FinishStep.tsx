@@ -1,4 +1,4 @@
-import { Step } from "../components";
+import { Panel, Readout, StatsBar, Step } from "../components";
 import { duration, human } from "../format";
 import type { RecoverResult } from "../shared/protocol";
 
@@ -9,42 +9,53 @@ const STEP_TEXT: Record<string, (c: Record<string, number | string>) => string> 
   dedupe: (c) => `${c.duplicates} duplicate(s) moved to "duplicates"`,
 };
 
-export function FinishStep({ result, onRestart }: { result: RecoverResult; onRestart: () => void }) {
-  const stats = Object.entries(result.stats).sort((a, b) => b[1] - a[1]);
+export function FinishStep({ code, result, onRestart }:
+    { code?: string; result: RecoverResult; onRestart: () => void }) {
+  const badBytes = result.bad_ranges.reduce((t, [, l]) => t + l, 0);
   return (
-    <Step title={result.saved ? `${result.saved} file(s) recovered` : "No photos or videos were found"}
-          intro={`Finished in ${duration(result.seconds)}. Everything is in ${result.out_dir}.`}
+    <Step code={code} title="Debrief"
+          intro={result.saved ? `Everything is in ${result.out_dir}.` : "No photos or videos were found on this source."}
           footer={<>
-            <button className="ghost" onClick={onRestart}>Recover something else</button>
-            <button onClick={() => window.salvage.openPath(result.out_dir)}>Open the folder</button>
+            <button className="ghost" onClick={onRestart}>New operation</button>
+            <button onClick={() => window.salvage.openPath(result.out_dir)}>Open the folder ▸</button>
           </>}>
       {result.stopped && (
-        <div className="box warn">
+        <div className="alert warn"><b>INCOMPLETE</b>
           {result.stopped === "cancelled" ? "Stopped before the end: only part of the drive was searched."
                                           : `Stopped early: ${result.stopped}`}
         </div>
       )}
-      {stats.length > 0 && (
-        <div className="chips">{stats.map(([ext, n]) => <span key={ext} className="chip">{ext} <b>{n}</b></span>)}</div>
-      )}
+      <Panel label="Outcome" right={<><span className={`led ${result.saved ? "green" : "amber"}`} />
+        {result.saved ? "files secured" : "nothing found"}</>}>
+        <div className="readouts">
+          <Readout label="Recovered" value={result.saved} tone={result.saved ? "ok" : "err"} />
+          <Readout label="Candidates" value={result.candidates} />
+          <Readout label="Source size" value={human(result.size)} />
+          <Readout label="Duration" value={duration(result.seconds) || "0s"} />
+          <Readout label="Unreadable" value={badBytes ? human(badBytes) : "none"} tone={badBytes ? "err" : "ok"} />
+        </div>
+        <StatsBar stats={result.stats} />
+      </Panel>
       {result.post && (
-        <ul className="plain">
-          {Object.entries(result.post).map(([k, c]) => <li key={k}>{STEP_TEXT[k]?.(c) ?? `${k}: ${JSON.stringify(c)}`}</li>)}
-        </ul>
+        <Panel label="Post-processing">
+          <ul className="plain">
+            {Object.entries(result.post).map(([k, c]) => <li key={k}>{STEP_TEXT[k]?.(c) ?? `${k}: ${JSON.stringify(c)}`}</li>)}
+          </ul>
+        </Panel>
       )}
-      {result.bad_ranges.length > 0 && (
-        <div className="box info">
-          {human(result.bad_ranges.reduce((t, [, l]) => t + l, 0))} of the drive could not be read. Files that touch
-          those areas end in "_badsectors" and may show grey or broken parts.
+      {badBytes > 0 && (
+        <div className="alert info"><b>NOTE</b>
+          {human(badBytes)} of the drive could not be read. Files that touch those areas end in "_badsectors" and
+          may show grey or broken parts.
         </div>
       )}
       {result.lost_volumes.length > 0 && (
-        <div className="box info">
+        <div className="alert info"><b>INTEL</b>
           Found {result.lost_volumes.length} volume(s) the partition table does not point to (deleted or lost
           partitions): {result.lost_volumes.map((v) => `${v.fs} ${human(v.size)}`).join(", ")}.
         </div>
       )}
-      <p className="muted small">A full list with offsets and checksums is in report.csv inside the folder.</p>
+      <p className="dim small">A full list with offsets and checksums is in report.csv inside the folder.</p>
     </Step>
   );
 }

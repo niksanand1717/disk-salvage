@@ -15,6 +15,10 @@
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/05-extraction.png" alt="Disk Salvage recovering files: live telemetry, sector map of the drive and recovered-file counters" width="820">
+</p>
+
 Disk Salvage searches a drive sector by sector for photos and videos. It finds them even when the
 partition table, the file system or the folders are gone. It only ever **reads** the drive it recovers
 from, and it is built for drives that are failing: unreadable sectors, USB disconnects, reads that hang.
@@ -130,6 +134,18 @@ If there's no release for your system yet, see [Building from source](#building-
 
 How long it takes depends on the drive's size and speed, not on how many files it holds. A 64 GB card over
 USB 3 typically takes 10–20 minutes. A large, failing hard drive can take many hours.
+
+<details>
+<summary><b>Screenshots</b></summary>
+
+| | |
+|---|---|
+| ![Start](docs/screenshots/01-start.png) Choose an operation | ![Source](docs/screenshots/02-source.png) Pick the drive |
+| ![Recon](docs/screenshots/03-recon.png) Drive check and verdict | ![Capture](docs/screenshots/04-capture-setup.png) Optional copy first |
+| ![Extraction](docs/screenshots/05-extraction.png) Live recovery | ![Debrief](docs/screenshots/06-debrief.png) Results |
+| ![Drive capture](docs/screenshots/07-drive-capture.png) Copy a drive to an image | ![Authorization](docs/screenshots/08-authorization.png) macOS/Linux password |
+
+</details>
 
 ## Step-by-step: copy a drive to an image file
 
