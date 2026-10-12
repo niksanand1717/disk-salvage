@@ -1,5 +1,5 @@
 {
-  "name": "disk-salvage-app",
+  "name": "disk-salvage",
   "version": "0.1.0",
   "private": true,
   "description": "Desktop app for Disk Salvage: recover photos and videos from damaged drives",
