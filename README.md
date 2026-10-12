@@ -262,7 +262,8 @@ cd app && npm run dist
 ```
 
 GitHub Actions runs the tests on Windows, macOS and Linux (`.github/workflows/ci.yml`) and can build the
-installers for all three (`.github/workflows/release.yml`: run it from the Actions tab, or push a `v*` tag).
+installers for all three (`.github/workflows/release.yml`: it runs when a release is published and attaches
+the files to it, or run it by hand from the Actions tab).
 
 ## License
 

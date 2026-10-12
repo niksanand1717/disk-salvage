@@ -1,11 +1,14 @@
 name: Build installers
 
 # Builds the Windows .exe files, the macOS .dmg and the Linux .AppImage.
-# Run it from the Actions tab, or push a tag such as v0.1.0.
+# Runs when a release is published (and attaches the files to it), or by hand from the Actions tab.
 on:
   workflow_dispatch:
-  push:
-    tags: ["v*"]
+  release:
+    types: [published]
+
+permissions:
+  contents: write          # to attach the installers to the release
 
 jobs:
   package:
@@ -42,3 +45,11 @@ jobs:
             app/release/*.dmg
             app/release/*.AppImage
           if-no-files-found: error
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          gh release upload "${{ github.ref_name }}" release/*.exe release/*.dmg release/*.AppImage --clobber
